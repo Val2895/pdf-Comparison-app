@@ -11,8 +11,17 @@ from collections import defaultdict
 # Suppress PyTorch warnings caused by Streamlit's file watcher
 os.environ["STREAMLIT_DISABLE_WATCHDOG"] = "true"
 
+import os
+
+# Load the API key from an environment variable
+gemini_api_key = os.getenv("GEMINI_API_KEY")
+
+# Check if the API key is set
+if not gemini_api_key:
+    raise ValueError("GEMINI_API_KEY environment variable is not set.")
+
 # Configure Gemini API
-genai.configure(api_key="GEMINI_API_KEY")
+genai.configure(api_key=gemini_api_key)
 gemini_model = genai.GenerativeModel('gemini-pro')
 
 
