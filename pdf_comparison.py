@@ -12,7 +12,7 @@ from collections import defaultdict
 os.environ["STREAMLIT_DISABLE_WATCHDOG"] = "true"
 
 # Configure Gemini API
-genai.configure(api_key="AIzaSyAiYz-rUzygNGxELtC0aGVlS3B0C3g-a5I")
+genai.configure(api_key="Use API KEY HERE")
 gemini_model = genai.GenerativeModel('gemini-pro')
 
 
