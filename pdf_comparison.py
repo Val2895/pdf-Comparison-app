@@ -6,17 +6,17 @@ from collections import defaultdict
 import numpy as np
 import faiss
 from sentence_transformers import SentenceTransformer
-import google.generativeai as genai
 from langchain.text_splitter import RecursiveCharacterTextSplitter
+from groq import GroqClient
 
 # Disable Streamlit's file-watcher to suppress PyTorch warnings
 ios.environ["STREAMLIT_DISABLE_WATCHDOG"] = "true"
 
-# Configure Gemini API
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
-if not GEMINI_API_KEY:
-    raise ValueError("GEMINI_API_KEY environment variable is not set.")
-genai.configure(api_key=GEMINI_API_KEY)
+# Configure Groq API
+GROQ_API_KEY = os.getenv("GROQ_API_KEY")
+if not GROQ_API_KEY:
+    raise ValueError("GROQ_API_KEY environment variable is not set.")
+client = GroqClient(api_key=GROQ_API_KEY)
 
 # Initialize embedding model once
 tf_model = SentenceTransformer('all-MiniLM-L6-v2')
@@ -131,7 +131,7 @@ class PDFChatBot:
                 lines.append(f"{color}: PDF 1 = {q1}, PDF 2 = {q2}")
             return "\n".join(lines)
 
-        # Fallback: semantic search + Gemini\ n        # Encode question and find top chunks
+        # Fallback: semantic search + Groq chat completion
         q_emb = tf_model.encode(question)
         rel1 = find_relevant_chunks(q_emb, self.pdf1_index, self.pdf1_chunks)
         rel2 = find_relevant_chunks(q_emb, self.pdf2_index, self.pdf2_chunks)
@@ -144,13 +144,13 @@ class PDFChatBot:
             "You are an expert analyst. Carefully analyze the following context to answer the question.\n"
             f"Question: {question}\n"
             f"Context: {context}\n"
-            "If the answer cannot be determined from the context, respond with "Insufficient information to answer the question.""
+            "If the answer cannot be determined from the context, respond with \"Insufficient information to answer the question.\""
         )
 
-        # Call Gemini chat completion
-        response = genai.chat.completions.create(
-            model="gemini-pro",
-            messages=[{"author": "user", "content": prompt}],
+        # Call Groq chat completion
+        response = client.completions.create(
+            model="groq-3.5-turbo",
+            messages=[{"role": "user", "content": prompt}],
         )
         return response.choices[0].message.content
 
